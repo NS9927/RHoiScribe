@@ -3,3 +3,5 @@ plans/
 tmp/
 dist/
 *.log
+AGENTS.md
+tests/
