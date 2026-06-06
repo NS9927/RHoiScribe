@@ -1,6 +1,8 @@
 # RHoiScribe
 
-RHoiScribe is a local MCP server for AI agents that work on Hearts of Iron IV mods. It gives Roo Code, Codex, Claude Code, and other MCP-compatible clients a local HOI4 modding reference layer plus tools for generating game-readable files.
+[简体中文](docs/README.zh-CN.md) | [Русский](docs/README.ru.md) | [日本語](docs/README.ja.md)
+
+RHoiScribe is a local MCP server for AI agents that work on Hearts of Iron IV mods. It gives Codex, Claude Code, and other MCP-compatible clients a local HOI4 modding reference layer plus tools for generating game-readable files.
 
 The goal is simple: reduce wasted agent work caused by repeated web searches, stale assumptions, unsafe file paths, missing localisation encoding, and Paradox script that looks plausible but does not load in game.
 
@@ -74,7 +76,7 @@ Run it directly only when you want to start the stdio MCP server by hand:
 .\target\release\rhoiscribe.exe
 ```
 
-For client-specific examples, see [docs/client-setup.md](docs/client-setup.md).
+For Codex, Claude Code, and generic MCP configuration examples, see [docs/client-setup.md](docs/client-setup.md).
 
 ## MCP Surface
 
