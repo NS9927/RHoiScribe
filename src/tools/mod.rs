@@ -162,7 +162,7 @@ impl ToolCatalog {
     }
 
     pub fn to_mcp_tools(&self) -> Vec<Tool> {
-        self.tools.iter().map(ToolSpec::to_mcp_tool).collect()
+        self.tools.iter().map(ToolSpec::as_mcp_tool).collect()
     }
 
     pub fn call(&self, name: &str, arguments: JsonObject) -> Result<CallToolResult, ToolError> {
@@ -209,7 +209,7 @@ impl ToolCatalog {
 }
 
 impl ToolSpec {
-    fn to_mcp_tool(&self) -> Tool {
+    fn as_mcp_tool(&self) -> Tool {
         Tool::new(
             Cow::Borrowed(self.name),
             Cow::Borrowed(self.description),

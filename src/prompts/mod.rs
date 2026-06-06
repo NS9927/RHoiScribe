@@ -159,7 +159,7 @@ impl PromptCatalog {
     pub fn to_mcp_prompts(&self) -> Vec<Prompt> {
         self.prompts
             .iter()
-            .map(PromptTemplate::to_mcp_prompt)
+            .map(PromptTemplate::as_mcp_prompt)
             .collect()
     }
 
@@ -212,14 +212,14 @@ impl PromptCatalog {
 }
 
 impl PromptTemplate {
-    fn to_mcp_prompt(&self) -> Prompt {
+    fn as_mcp_prompt(&self) -> Prompt {
         Prompt::new(
             self.name,
             Some(self.description),
             Some(
                 self.arguments
                     .iter()
-                    .map(PromptArgumentTemplate::to_mcp_argument)
+                    .map(PromptArgumentTemplate::as_mcp_argument)
                     .collect(),
             ),
         )
@@ -228,7 +228,7 @@ impl PromptTemplate {
 }
 
 impl PromptArgumentTemplate {
-    fn to_mcp_argument(&self) -> PromptArgument {
+    fn as_mcp_argument(&self) -> PromptArgument {
         PromptArgument::new(self.name)
             .with_title(self.title)
             .with_description(self.description)
