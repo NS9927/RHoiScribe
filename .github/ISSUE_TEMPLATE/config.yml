@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: RHoiScribe README
+    url: https://github.com/czxieddan/RHoiScribe#readme
+    about: Start here for project overview, MCP surface, tools, and quick-start guidance.
+  - name: MCP client setup guide
+    url: https://github.com/czxieddan/RHoiScribe/blob/master/docs/client-setup.md
+    about: Use this for Codex, Claude Code, and generic MCP client configuration examples.

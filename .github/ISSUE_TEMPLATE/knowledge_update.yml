@@ -1,0 +1,93 @@
+name: Knowledge correction or expansion
+description: Report outdated, incomplete, missing, or incorrect HOI4 knowledge bundled with RHoiScribe.
+title: "[Knowledge]: "
+labels: ["knowledge", "documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        RHoiScribe relies on bundled HOI4 knowledge to reduce agent mistakes. Please include source references and minimal examples so maintainers can review changes without copying long wiki pages or game files.
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      multiple: true
+      options:
+        - Incorrect bundled knowledge
+        - Outdated bundled knowledge
+        - Missing topic
+        - Topic needs more detail
+        - Source reference update
+        - Example or validation guidance improvement
+    validations:
+      required: true
+
+  - type: input
+    id: topic
+    attributes:
+      label: Topic ID or resource URI
+      description: Include the RHoiScribe topic ID or MCP resource URI if you know it.
+      placeholder: "script.on_actions.scope_matrix or rhoiscribe://hoi4/knowledge/script.on_actions.scope_matrix"
+    validations:
+      required: false
+
+  - type: input
+    id: hoi4_version
+    attributes:
+      label: HOI4 version
+      description: The game version where this syntax, behavior, or rule is valid.
+      placeholder: "Example: 1.16.x"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_content
+    attributes:
+      label: Current bundled content or missing coverage
+      description: Describe what RHoiScribe currently says, omits, or gets wrong.
+      placeholder: "The catalog currently says ..., but it does not mention ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_content
+    attributes:
+      label: Proposed correction or expansion
+      description: Explain the corrected knowledge in your own words.
+    validations:
+      required: true
+
+  - type: textarea
+    id: source_references
+    attributes:
+      label: Source references
+      description: Link official wiki pages, patch notes, documentation, or small source snippets. Avoid pasting long copyrighted pages or proprietary game files.
+      placeholder: |
+        - https://hoi4.paradoxwikis.com/...
+        - Patch notes or other source:
+    validations:
+      required: true
+
+  - type: textarea
+    id: minimal_example
+    attributes:
+      label: Minimal HOI4 example
+      description: Provide a small script, localisation, path layout, or generated-output example that shows the rule.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched existing issues and did not find the same knowledge report.
+          required: true
+        - label: I summarized the knowledge in my own words instead of copying long external text.
+          required: true
+        - label: I included source references or explained why no source is available.
+          required: true
+        - label: I am willing to submit a pull request that updates `resources/knowledge/`.
+          required: false

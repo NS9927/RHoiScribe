@@ -1,0 +1,136 @@
+name: Bug report
+description: Report a problem with RHoiScribe, MCP startup, tools, resources, or generated output.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Clear reproduction steps, MCP logs, tool arguments, and minimal HOI4 snippets help maintainers fix issues faster.
+
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Affected area
+      description: Choose the area that best matches the problem.
+      multiple: true
+      options:
+        - MCP startup or stdio transport
+        - Prompt catalog
+        - Resource catalog or bundled knowledge
+        - Knowledge search
+        - Unique identifier scanner
+        - Batch generation tool
+        - Path validation or script formatter
+        - Client setup documentation
+        - Packaging or release binary
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: RHoiScribe version or commit
+      description: Use `rhoiscribe --version`, the release tag, or the commit SHA you built from.
+      placeholder: "0.1.0, v0.1.0, or commit SHA"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      multiple: false
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mcp_client
+    attributes:
+      label: MCP client
+      description: Select the client used when the issue appeared.
+      multiple: false
+      options:
+        - Codex
+        - Claude Code
+        - Generic MCP client
+        - Direct command line
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: hoi4_version
+    attributes:
+      label: HOI4 version
+      description: Required when the issue involves HOI4 syntax, paths, resources, or generated files.
+      placeholder: "Example: 1.16.x"
+    validations:
+      required: false
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and why it is incorrect.
+      placeholder: "The tool returned ..., but the generated file ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe what RHoiScribe should have done instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include MCP method, prompt/resource/tool name, command line invocation, and any relevant client configuration.
+      placeholder: |
+        1. Start RHoiScribe with ...
+        2. Call tools/call with ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Minimal input, tool arguments, or HOI4 snippet
+      description: Paste the smallest JSON arguments, Paradox script, localisation file, or path layout that reproduces the problem.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and output
+      description: Paste relevant MCP client logs, terminal output, validation errors, generated file previews, or screenshots. Remove secrets and private paths when possible.
+      render: text
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched existing issues and did not find the same report.
+          required: true
+        - label: I included enough information for maintainers to reproduce or investigate the problem.
+          required: true
+        - label: I removed secrets, tokens, and private data from logs or snippets.
+          required: true
+        - label: I am willing to help test a fix or submit a pull request.
+          required: false

@@ -1,0 +1,103 @@
+name: MCP tool request
+description: Request a new generation, validation, search, or scanning tool for HOI4 agent workflows.
+title: "[Tool]: "
+labels: ["enhancement", "tooling"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        RHoiScribe tools should be repeatable, structured, safe for mod-root paths, and useful to agents before they write game files.
+
+  - type: dropdown
+    id: tool_type
+    attributes:
+      label: Tool type
+      multiple: true
+      options:
+        - Batch generation
+        - Validation
+        - Formatting
+        - Knowledge search
+        - Project scanning
+        - Duplicate or identifier detection
+        - Packaging or release helper
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Agent workflow
+      description: Describe the agent task this tool should make safer, faster, or more reliable.
+      placeholder: "Before creating new focuses, the agent should ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Proposed inputs
+      description: List expected arguments, including whether paths are mod-root-relative and whether write mode is needed.
+      render: json
+      placeholder: |
+        {
+          "output_root": "<MOD_OUTPUT_ROOT>",
+          "dry_run": true
+        }
+    validations:
+      required: false
+
+  - type: textarea
+    id: outputs
+    attributes:
+      label: Proposed outputs
+      description: Describe the structured response agents should receive.
+      render: json
+      placeholder: |
+        {
+          "dry_run": true,
+          "files": [],
+          "messages": []
+        }
+    validations:
+      required: false
+
+  - type: textarea
+    id: hoi4_rules
+    attributes:
+      label: HOI4 rules and edge cases
+      description: Include relevant file types, code blocks, scopes, identifier uniqueness rules, replace_path behavior, encoding requirements, or version-specific details.
+    validations:
+      required: true
+
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety and overwrite behavior
+      description: Explain how the tool should handle dry-run mode, existing files, duplicate IDs, unsafe paths, and `.mod` or `descriptor.mod` replace rules.
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example input and expected result
+      description: Provide a small realistic example from an HOI4 modding workflow.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched existing issues and did not find the same tool request.
+          required: true
+        - label: I described how the tool should avoid unsafe writes or accidental overwrites.
+          required: true
+        - label: I included HOI4 syntax or workflow details specific enough to implement and test.
+          required: true
+        - label: I am willing to help design, test, or implement this tool.
+          required: false

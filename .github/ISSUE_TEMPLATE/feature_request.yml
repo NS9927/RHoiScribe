@@ -1,0 +1,80 @@
+name: Feature request
+description: Suggest a new RHoiScribe capability that is not specifically a new MCP tool.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for prompts, resources, documentation, packaging, setup, release behavior, or general MCP improvements. For a new generation, validation, or scanning tool, use the MCP tool request template.
+
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Prompt behavior
+        - Resource or knowledge access
+        - MCP compatibility
+        - Client setup documentation
+        - Release packaging
+        - Developer workflow
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What limitation, repeated manual work, or user pain would this solve?
+      placeholder: "Agents currently have to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you want RHoiScribe to provide.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Mention workarounds, other MCP servers, manual steps, or designs you considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: MCP client compatibility
+      description: Note whether this should work in Codex, Claude Code, generic MCP clients, or direct CLI use.
+      placeholder: "This should remain standard MCP over stdio and should not require client-specific behavior."
+    validations:
+      required: false
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example usage
+      description: Provide sample prompt text, resource URI, expected MCP response shape, command line usage, or docs text if useful.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched existing issues and did not find the same request.
+          required: true
+        - label: This request is compatible with standard MCP clients or explains why an exception is needed.
+          required: true
+        - label: I am willing to submit a pull request for this feature.
+          required: false
