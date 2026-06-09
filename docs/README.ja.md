@@ -104,7 +104,7 @@ Agents は反復可能な生成と検証のために tools を呼び出せます
 Generation tools は dry-run preview をサポートします。write mode では `output_root` が必要で、対象 Mod の root からの相対 path にのみ書き込みます。
 Knowledge search は `mtth variables`、`decision mission blocks`、`on_actions FROM.FROM` のような query に対して matching topic IDs と MCP resource URIs を返します。
 Identifier scanning は proposed new IDs を structured HOI4 definitions に対して batch check し、duplicates、existing output files、`replace_path` risks を返します。
-Environment discovery はまず Steam metadata から HOI4 install を探し、必要に応じて folder scan を行い、`launcher-settings.json` から document data path と game version を読み取ります。
+Environment discovery はまず Steam metadata から HOI4 install を探し、必要に応じて folder scan を行い、`launcher-settings.json` から document data path、`hoi4.exe` path、`logs/error.log` path、game version を読み取ります。
 Debug-run validation は optional な `hoi4.exe -gdpr-compliant -debug_mode` 起動の前に、document folders の `map`、`localisation`、`history`、launcher mod descriptors、現在の playset、dependency descriptors、workspace mod path を確認します。
 Error-log classification は `error.log` を HOI4 subsystem ごとに分類し、agent が diff または generated file list を持っている場合は changed paths に結び付けます。
 

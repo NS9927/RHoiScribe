@@ -104,7 +104,7 @@ Agents can call tools for repeatable generation and validation:
 Generation tools support dry-run previews. In write mode they require an `output_root` and write paths relative to the target mod root.
 Knowledge search returns matching topic IDs and MCP resource URIs for queries such as `mtth variables`, `decision mission blocks`, or `on_actions FROM.FROM`.
 Identifier scanning checks batches of proposed new IDs against structured HOI4 definitions and reports duplicates, existing output files, and `replace_path` risks.
-Environment discovery finds the HOI4 install through Steam metadata first, then optional folder scanning, and reads `launcher-settings.json` for the document data path and game version.
+Environment discovery finds the HOI4 install through Steam metadata first, then optional folder scanning, and reads `launcher-settings.json` for the document data path, `hoi4.exe` path, `logs/error.log` path, and game version.
 Debug-run validation checks the document `map`, `localisation`, and `history` folders, active launcher mod descriptors, the current playset, dependency descriptors, and the workspace mod path before an optional `hoi4.exe -gdpr-compliant -debug_mode` launch.
 Error-log classification groups `error.log` lines by likely HOI4 subsystem and links them back to changed paths when the agent has a diff or generated file list.
 

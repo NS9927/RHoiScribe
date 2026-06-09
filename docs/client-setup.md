@@ -138,7 +138,7 @@ Windows clients usually need the `.exe` path and escaped backslashes in JSON:
 - Resources: available through `resources/list` and `resources/read`.
 - Tools: available through `tools/list` and `tools/call`.
 - Write mode: generation tools require `dry_run = false` and `output_root = "<MOD_OUTPUT_ROOT>"`.
-- Environment discovery: `discover_hoi4_environment` can find `<HOI4_GAME_PATH>`, `<HOI4_DOCUMENT_PATH>`, and game version when local HOI4 is installed.
+- Environment discovery: `discover_hoi4_environment` can find `<HOI4_GAME_PATH>`, `game_executable_path`, `<HOI4_DOCUMENT_PATH>`, `error_log_path`, and game version when local HOI4 is installed.
 - Debug preflight: `validate_hoi4_debug_run` checks launcher descriptors, playset state, clean document folders, and can optionally launch `hoi4.exe -gdpr-compliant -debug_mode`.
 - Log triage: `classify_error_log` groups `error.log` entries by likely HOI4 subsystem and can correlate entries with changed mod-relative paths.
 

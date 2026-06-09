@@ -29,7 +29,9 @@ pub struct DiscoverHoi4EnvironmentRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Hoi4EnvironmentResult {
     pub game_path: Option<String>,
+    pub game_executable_path: Option<String>,
     pub document_path: Option<String>,
+    pub error_log_path: Option<String>,
     pub version: Option<String>,
     pub source: Option<String>,
     pub valid_game_path: bool,
@@ -93,7 +95,9 @@ pub fn discover_hoi4_environment(
         messages.push("HOI4 game directory was not found".to_string());
         return Ok(Hoi4EnvironmentResult {
             game_path: None,
+            game_executable_path: None,
             document_path: None,
+            error_log_path: None,
             version: None,
             source: None,
             valid_game_path: false,
@@ -102,12 +106,18 @@ pub fn discover_hoi4_environment(
     };
 
     let launcher = launcher_settings(&candidate.path, &mut messages);
+    let document_path = launcher
+        .as_ref()
+        .and_then(|settings| settings.game_data_path.clone());
+    let error_log_path = document_path
+        .as_ref()
+        .map(|path| clean_display_path(&PathBuf::from(path).join("logs").join("error.log")));
 
     Ok(Hoi4EnvironmentResult {
         game_path: Some(clean_display_path(&candidate.path)),
-        document_path: launcher
-            .as_ref()
-            .and_then(|settings| settings.game_data_path.clone()),
+        game_executable_path: Some(clean_display_path(&candidate.path.join("hoi4.exe"))),
+        document_path,
+        error_log_path,
         version: launcher.and_then(|settings| settings.version),
         source: Some(candidate.source),
         valid_game_path: true,
@@ -500,7 +510,7 @@ fn launcher_settings(path: &Path, messages: &mut Vec<String>) -> Option<Launcher
     let game_data_path = value
         .get("gameDataPath")
         .and_then(Value::as_str)
-        .map(clean_input_path);
+        .map(expand_launcher_path);
     let version = value
         .get("version")
         .and_then(Value::as_str)
@@ -830,6 +840,39 @@ fn clean_input_path(path: &str) -> String {
     path.trim().trim_matches('"').replace("\\\\", "\\")
 }
 
+fn expand_launcher_path(path: &str) -> String {
+    let mut expanded = clean_input_path(path);
+
+    if expanded.contains("%USER_DOCUMENTS%")
+        && let Some(documents) = user_documents_dir()
+    {
+        expanded = expanded.replace("%USER_DOCUMENTS%", &documents);
+    }
+
+    expanded
+}
+
+#[cfg(windows)]
+fn user_documents_dir() -> Option<String> {
+    let user_profile = std::env::var("USERPROFILE").ok()?;
+    Some(
+        PathBuf::from(user_profile)
+            .join("Documents")
+            .to_string_lossy()
+            .replace('\\', "/"),
+    )
+}
+
+#[cfg(not(windows))]
+fn user_documents_dir() -> Option<String> {
+    std::env::var("HOME").ok().map(|home| {
+        PathBuf::from(home)
+            .join("Documents")
+            .to_string_lossy()
+            .replace('\\', "/")
+    })
+}
+
 fn clean_display_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
@@ -857,7 +900,7 @@ mod tests {
         create_valid_game(&game);
         fs::write(
             game.join("launcher-settings.json"),
-            r#"{"gameDataPath":"C:\\Users\\Example\\Documents\\Paradox Interactive\\Hearts of Iron IV","version":"1.16.9"}"#,
+            r#"{"gameDataPath":"%USER_DOCUMENTS%/Paradox Interactive/Hearts of Iron IV","version":"1.16.9"}"#,
         )
         .expect("launcher settings should write");
         fs::write(
@@ -883,13 +926,27 @@ mod tests {
                 .unwrap()
                 .ends_with("Hearts of Iron IV")
         );
+        assert!(
+            result
+                .game_executable_path
+                .as_deref()
+                .unwrap()
+                .ends_with("Hearts of Iron IV/hoi4.exe")
+        );
         assert_eq!(result.version.as_deref(), Some("1.16.9"));
         assert!(
             result
                 .document_path
                 .as_deref()
                 .unwrap()
-                .contains("Paradox Interactive")
+                .ends_with("Documents/Paradox Interactive/Hearts of Iron IV")
+        );
+        assert!(
+            result
+                .error_log_path
+                .as_deref()
+                .unwrap()
+                .ends_with("Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log")
         );
 
         fs::remove_dir_all(root).expect("temp dir should clean up");

@@ -104,7 +104,7 @@ Agents 可以调用工具进行可重复的生成和验证：
 生成工具支持 dry-run 预览。写入模式需要 `output_root`，并且只按目标 Mod 根目录的相对路径写入。
 知识搜索会为 `mtth variables`、`decision mission blocks`、`on_actions FROM.FROM` 这类查询返回匹配 topic ID 和 MCP resource URI。
 唯一 ID 扫描会按结构化 HOI4 定义批量检查候选新 ID，并报告重复、已有输出文件和 `replace_path` 风险。
-环境发现会优先通过 Steam 元数据定位 HOI4 安装目录，再按需扫描文件夹，并从 `launcher-settings.json` 读取文档目录和游戏版本。
+环境发现会优先通过 Steam 元数据定位 HOI4 安装目录，再按需扫描文件夹，并从 `launcher-settings.json` 读取文档目录、`hoi4.exe` 路径、`logs/error.log` 路径和游戏版本。
 Debug 启动检查会在可选启动 `hoi4.exe -gdpr-compliant -debug_mode` 前检查文档目录下的 `map`、`localisation`、`history` 文件夹、launcher mod 描述文件、当前播放集、依赖描述文件和工作区 mod 路径。
 Error log 分类会按可能的 HOI4 子系统整理 `error.log`，并在 agent 提供 diff 或生成文件列表时关联到对应变更路径。
 
