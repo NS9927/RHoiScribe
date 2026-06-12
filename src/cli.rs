@@ -1,11 +1,14 @@
 use std::{error::Error, fmt, io, path::PathBuf};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub type SkillCliCommand = crate::skill::SkillCommand;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CliCommand {
     Serve,
     Help,
     Version,
     PrintCommand,
+    Skill(SkillCliCommand),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,6 +34,44 @@ where
         [flag] if flag == "--print-command" || flag == "--mcp-command" => {
             Ok(CliCommand::PrintCommand)
         }
+        [flag, command] if flag == "--skill" && command == "list-tools" => {
+            Ok(CliCommand::Skill(SkillCliCommand::ListTools))
+        }
+        [flag, command] if flag == "--skill" && command == "list-resources" => {
+            Ok(CliCommand::Skill(SkillCliCommand::ListResources))
+        }
+        [flag, command] if flag == "--skill" && command == "list-prompts" => {
+            Ok(CliCommand::Skill(SkillCliCommand::ListPrompts))
+        }
+        [flag, command, uri] if flag == "--skill" && command == "read-resource" => {
+            Ok(CliCommand::Skill(SkillCliCommand::ReadResource {
+                uri: uri.clone(),
+            }))
+        }
+        [flag, command, name] if flag == "--skill" && command == "get-prompt" => {
+            Ok(CliCommand::Skill(SkillCliCommand::GetPrompt {
+                name: name.clone(),
+                arguments_json: "{}".to_string(),
+            }))
+        }
+        [flag, command, name, arguments_json] if flag == "--skill" && command == "get-prompt" => {
+            Ok(CliCommand::Skill(SkillCliCommand::GetPrompt {
+                name: name.clone(),
+                arguments_json: arguments_json.clone(),
+            }))
+        }
+        [flag, command, name] if flag == "--skill" && command == "call-tool" => {
+            Ok(CliCommand::Skill(SkillCliCommand::CallTool {
+                name: name.clone(),
+                arguments_json: "{}".to_string(),
+            }))
+        }
+        [flag, command, name, arguments_json] if flag == "--skill" && command == "call-tool" => {
+            Ok(CliCommand::Skill(SkillCliCommand::CallTool {
+                name: name.clone(),
+                arguments_json: arguments_json.clone(),
+            }))
+        }
         [argument, ..] => Err(CliError {
             argument: argument.clone(),
         }),
@@ -51,9 +92,15 @@ Usage:\n\
   rhoiscribe                  Run the MCP server over stdio\n\
   rhoiscribe --print-command  Print the absolute command path for MCP config\n\
   rhoiscribe --mcp-command    Alias for --print-command\n\
+  rhoiscribe --skill list-tools\n\
+  rhoiscribe --skill list-resources\n\
+  rhoiscribe --skill list-prompts\n\
+  rhoiscribe --skill read-resource <URI>\n\
+  rhoiscribe --skill get-prompt <NAME> <JSON_ARGUMENTS>\n\
+  rhoiscribe --skill call-tool <NAME> <JSON_ARGUMENTS>\n\
   rhoiscribe --help           Show this help text\n\
   rhoiscribe --version        Show version information\n\n\
-MCP clients should launch this binary as a local stdio server.\n"
+MCP clients should launch this binary as a local stdio server. Skill clients can use --skill commands for direct JSON output without MCP setup.\n"
 }
 
 impl fmt::Display for CliError {
@@ -66,7 +113,7 @@ impl Error for CliError {}
 
 #[cfg(test)]
 mod tests {
-    use super::{CliCommand, command_path, help_text, parse_args};
+    use super::{CliCommand, SkillCliCommand, command_path, help_text, parse_args};
 
     #[test]
     fn parses_print_command_flags() {
@@ -81,6 +128,27 @@ mod tests {
     #[test]
     fn help_mentions_print_command() {
         assert!(help_text().contains("--print-command"));
+    }
+
+    #[test]
+    fn parses_skill_commands() {
+        let list =
+            parse_args(["rhoiscribe", "--skill", "list-tools"]).expect("skill list should parse");
+        let read = parse_args([
+            "rhoiscribe",
+            "--skill",
+            "read-resource",
+            "rhoiscribe://hoi4/latest-update",
+        ])
+        .expect("skill read-resource should parse");
+
+        assert_eq!(list, CliCommand::Skill(SkillCliCommand::ListTools));
+        assert_eq!(
+            read,
+            CliCommand::Skill(SkillCliCommand::ReadResource {
+                uri: "rhoiscribe://hoi4/latest-update".to_string(),
+            })
+        );
     }
 
     #[test]

@@ -14,5 +14,9 @@ async fn main() -> anyhow::Result<()> {
             println!("{}", rhoiscribe::cli::command_path()?.display());
             Ok(())
         }
+        rhoiscribe::cli::CliCommand::Skill(command) => {
+            println!("{}", rhoiscribe::skill::execute_skill_command(command)?);
+            Ok(())
+        }
     }
 }
