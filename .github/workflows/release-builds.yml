@@ -34,12 +34,17 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item "target/x86_64-pc-windows-msvc/release/rhoiscribe.exe" "dist/rhoiscribe-windows-x86_64.exe"
+          Copy-Item "resources/skill/SKILL.md" "dist/SKILL.md"
+          Compress-Archive -Path "dist/rhoiscribe-windows-x86_64.exe", "dist/SKILL.md" -DestinationPath "dist/rhoiscribe-skill-windows-x86_64.zip" -Force
+          Remove-Item "dist/SKILL.md"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-windows
-          path: dist/rhoiscribe-windows-x86_64.exe
+          path: |
+            dist/rhoiscribe-windows-x86_64.exe
+            dist/rhoiscribe-skill-windows-x86_64.zip
           if-no-files-found: error
           retention-days: 14
 
@@ -65,12 +70,17 @@ jobs:
           mkdir -p dist
           cp target/x86_64-unknown-linux-gnu/release/rhoiscribe dist/rhoiscribe-linux-x86_64
           chmod +x dist/rhoiscribe-linux-x86_64
+          cp resources/skill/SKILL.md dist/SKILL.md
+          (cd dist && zip -9 rhoiscribe-skill-linux-x86_64.zip rhoiscribe-linux-x86_64 SKILL.md)
+          rm dist/SKILL.md
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-linux
-          path: dist/rhoiscribe-linux-x86_64
+          path: |
+            dist/rhoiscribe-linux-x86_64
+            dist/rhoiscribe-skill-linux-x86_64.zip
           if-no-files-found: error
           retention-days: 14
 
@@ -103,12 +113,17 @@ jobs:
             target/aarch64-apple-darwin/release/rhoiscribe \
             -output dist/rhoiscribe-macos-universal
           chmod +x dist/rhoiscribe-macos-universal
+          cp resources/skill/SKILL.md dist/SKILL.md
+          (cd dist && zip -9 rhoiscribe-skill-macos-universal.zip rhoiscribe-macos-universal SKILL.md)
+          rm dist/SKILL.md
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-macos
-          path: dist/rhoiscribe-macos-universal
+          path: |
+            dist/rhoiscribe-macos-universal
+            dist/rhoiscribe-skill-macos-universal.zip
           if-no-files-found: error
           retention-days: 14
 
@@ -169,13 +184,21 @@ jobs:
             echo
             echo "### Downloads"
             echo
+            echo "Direct binaries:"
+            echo
             echo "- Windows x86_64: \`rhoiscribe-windows-x86_64.exe\`"
             echo "- Linux x86_64: \`rhoiscribe-linux-x86_64\`"
             echo "- macOS universal: \`rhoiscribe-macos-universal\`"
             echo
+            echo "Skill packages include \`SKILL.md\` and the matching executable:"
+            echo
+            echo "- Windows Skill package: \`rhoiscribe-skill-windows-x86_64.zip\`"
+            echo "- Linux Skill package: \`rhoiscribe-skill-linux-x86_64.zip\`"
+            echo "- macOS Skill package: \`rhoiscribe-skill-macos-universal.zip\`"
+            echo
             echo "On Linux or macOS, run \`chmod +x <downloaded-file>\` if your system asks for executable permission."
             echo
-            echo "To print the command path for your MCP client, run the downloaded file with \`--print-command\`."
+            echo "To print the command path for your MCP client, run the downloaded file with \`--print-command\`. To use RHoiScribe from a Skill package without MCP setup, run \`--skill list-tools\`, \`--skill list-resources\`, or \`--skill list-prompts\`."
             echo
             echo "### Changes"
             echo
@@ -206,5 +229,8 @@ jobs:
             dist/rhoiscribe-windows-x86_64.exe \
             dist/rhoiscribe-linux-x86_64 \
             dist/rhoiscribe-macos-universal \
+            dist/rhoiscribe-skill-windows-x86_64.zip \
+            dist/rhoiscribe-skill-linux-x86_64.zip \
+            dist/rhoiscribe-skill-macos-universal.zip \
             --clobber \
             --repo "$GITHUB_REPOSITORY"

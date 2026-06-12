@@ -187,4 +187,25 @@ mod tests {
                 .contains("focus = {")
         );
     }
+
+    #[test]
+    fn release_skill_document_mentions_direct_commands() {
+        let skill = include_str!("../resources/skill/SKILL.md");
+
+        assert!(skill.contains("--skill list-tools"));
+        assert!(skill.contains("--skill list-resources"));
+        assert!(skill.contains("--skill list-prompts"));
+        assert!(skill.contains("--skill call-tool"));
+        assert!(skill.contains("same directory"));
+    }
+
+    #[test]
+    fn release_workflow_includes_skill_archives() {
+        let workflow = include_str!("../.github/workflows/release-builds.yml");
+
+        assert!(workflow.contains("rhoiscribe-skill-windows-x86_64.zip"));
+        assert!(workflow.contains("rhoiscribe-skill-linux-x86_64.zip"));
+        assert!(workflow.contains("rhoiscribe-skill-macos-universal.zip"));
+        assert!(workflow.contains("resources/skill/SKILL.md"));
+    }
 }
