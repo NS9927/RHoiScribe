@@ -214,6 +214,8 @@ mod tests {
         let workflow = include_str!("../.github/workflows/release-builds.yml");
 
         assert!(!workflow.contains("echo \"## RHoiScribe $TAG_NAME\""));
+        assert!(workflow.contains("cleanup-release-headings:"));
+        assert!(workflow.contains("github.event_name != 'pull_request'"));
         assert!(workflow.contains("Clean duplicate release body headings"));
         assert!(workflow.contains("gh release list"));
         assert!(workflow.contains(r#"\A## RHoiScribe v[0-9]"#));
