@@ -4,7 +4,7 @@
 
 <h1 align="center">RHoiScribe</h1>
 
-Локальный MCP-сервер для Hearts of Iron IV modding agents
+Локальный MCP-сервер и SKILL для Hearts of Iron IV modding agents
 
 [English](../README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
@@ -75,12 +75,6 @@ RHoiScribe дает agents локальный слой знаний HOI4, reusab
 
 Skill package для нужной платформы предоставляет те же возможности для agents, которым удобнее читать локальную Skill folder без отдельной записи в MCP server.
 
-<h2 align="center">Помогите улучшить RHoiScribe</h2>
-
-Синтаксис HOI4 и modding-практики меняются вместе с версиями игры. Если встроенные знания устарели, неполны или содержат ошибку, откройте [Issue](https://github.com/czxieddan/RHoiScribe/issues) и по возможности укажите версию игры, тип файла, ссылку на источник и минимальный воспроизводимый пример.
-
-Pull requests приветствуются для расширения knowledge catalog, улучшения примеров и разработки новых MCP tools для генерации, проверки, сканирования проектов и agent workflows.
-
 <h2 align="center">Быстрый старт</h2>
 
 Скачайте готовый binary из [GitHub Releases](https://github.com/czxieddan/RHoiScribe/releases):
@@ -121,3 +115,13 @@ Source build помещает исполняемый файл в `<ABSOLUTE_PATH
 ```
 
 Примеры конфигурации для Codex, Claude Code и generic MCP см. в [client-setup.md](client-setup.md).
+
+<h2 align="center">Помогите улучшить RHoiScribe</h2>
+
+Синтаксис HOI4 и modding-практики меняются вместе с версиями игры. Если встроенные знания устарели, неполны или содержат ошибку, откройте [Issue](https://github.com/czxieddan/RHoiScribe/issues) и по возможности укажите версию игры, тип файла, ссылку на источник и минимальный воспроизводимый пример.
+
+Pull requests приветствуются для расширения knowledge catalog, улучшения примеров и разработки новых MCP tools для генерации, проверки, сканирования проектов и agent workflows.
+
+<h2 align="center">Указание основы</h2>
+
+Проекты, основанные на RHoiScribe, должны включать в README явный раздел с указанием основы. Можно использовать короткий шаблон из [rhoiscribe-attribution.md](rhoiscribe-attribution.md).

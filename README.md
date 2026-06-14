@@ -4,7 +4,7 @@
 
 <h1 align="center">RHoiScribe</h1>
 
-Local MCP server for Hearts of Iron IV modding agents
+Local MCP server and SKILL for Hearts of Iron IV modding agents
 
 [简体中文](docs/README.zh-CN.md) | [Русский](docs/README.ru.md) | [日本語](docs/README.ja.md)
 
@@ -75,12 +75,6 @@ At a high level, it helps agents with:
 
 The bundled Skill package exposes the same capabilities for agents that prefer a local Skill folder instead of an MCP server entry.
 
-<h2 align="center">Help Improve RHoiScribe</h2>
-
-HOI4 syntax and modding practice change over time. If you find bundled knowledge that is outdated, incomplete, or wrong, please open an [Issue](https://github.com/czxieddan/RHoiScribe/issues) with the game version, file type, source reference, and a minimal example when possible.
-
-Pull requests are welcome for expanding the knowledge catalog, improving examples, or building more MCP tools for generation, validation, project scanning, and other agent workflows.
-
 <h2 align="center">Quick Start</h2>
 
 Download a prebuilt binary from [GitHub Releases](https://github.com/czxieddan/RHoiScribe/releases):
@@ -121,3 +115,13 @@ Linux and macOS users can run the same option on their downloaded file:
 ```
 
 For Codex, Claude Code, and generic MCP configuration examples, see [docs/client-setup.md](docs/client-setup.md).
+
+<h2 align="center">Help Improve RHoiScribe</h2>
+
+HOI4 syntax and modding practice change over time. If you find bundled knowledge that is outdated, incomplete, or wrong, please open an [Issue](https://github.com/czxieddan/RHoiScribe/issues) with the game version, file type, source reference, and a minimal example when possible.
+
+Pull requests are welcome for expanding the knowledge catalog, improving examples, or building more MCP tools for generation, validation, project scanning, and other agent workflows.
+
+<h2 align="center">Attribution</h2>
+
+Projects based on RHoiScribe must include a clear README attribution section. Use the short statement template in [docs/rhoiscribe-attribution.md](docs/rhoiscribe-attribution.md).
