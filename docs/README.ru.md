@@ -73,7 +73,7 @@ RHoiScribe дает agents локальный слой знаний HOI4, reusab
 - безопасным редактированием существующих файлов с учетом workspace conventions
 - experimental GUI/GFX asset creation после user approval на новую procedural art
 
-Skill package для нужной платформы предоставляет те же возможности для agents, которым удобнее читать локальную Skill folder без отдельной записи в MCP server. Прямые команды Skill менее полноценны, чем интеграция через MCP client; если ваш agent поддерживает MCP, лучше использовать MCP server.
+Skill package — самый быстрый способ дать совместимому agent локальный доступ без изменения MCP configuration. Для полной функциональности и более плавной работы используйте MCP server, если ваш agent поддерживает MCP.
 
 <h2 align="center">Быстрый старт</h2>
 
