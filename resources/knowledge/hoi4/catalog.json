@@ -1199,15 +1199,20 @@
         "available",
         "complete_effect"
       ],
-      "body": "Decision categories group decisions; individual decisions control visibility, availability, cost, timers, removal, effects, and AI use. Generated decisions must distinguish visible from available so unavailable choices can still be intentionally shown. Batch decision generation can carry category icon, category visible/allowed, per-decision icon, cost, fire_only_once, days_remove, days_mission_timeout, visible, available, target_trigger, cancel_trigger, remove_trigger, complete_effect, timeout_effect, remove_effect, ai_will_do, dynamic, and extra raw HOI4 script. Missions, targeted decisions, state-targeted decisions, and gameplay systems require complete available/visible/cancel/timeout/effect logic from resources and workspace context.",
+      "body": "Decision categories group decisions; individual decisions control visibility, availability, cost, timers, removal, effects, and AI use. A decision category should be defined as a top-level category block, and category metadata can live in common/decisions/categories/*.txt as a decision category definition while the actual decision entries normally live under common/decisions/*.txt. Generated decisions must distinguish visible from available so unavailable choices can still be intentionally shown. Batch decision generation can carry category icon, category visible/allowed, per-decision icon, cost, fire_only_once, days_remove, days_mission_timeout, visible, available, target_trigger, cancel_trigger, remove_trigger, complete_effect, timeout_effect, remove_effect, ai_will_do, dynamic, and extra raw HOI4 script. Missions, targeted decisions, state-targeted decisions, and gameplay systems require complete available/visible/cancel/timeout/effect logic from resources and workspace context.",
       "syntax_blocks": [
+        "common/decisions/categories/my_categories.txt",
+        "my_category = { icon = generic_decisions }",
+        "common/decisions/my_decisions.txt",
         "my_category = { icon = generic_decisions my_decision = { icon = generic_decision cost = 25 days_mission_timeout = 30 available = { has_political_power > 25 } cancel_trigger = { has_war = no } complete_effect = { custom_effect_tooltip = my_warning hidden_effect = { set_country_flag = my_done } } timeout_effect = { clr_country_flag = my_pending } ai_will_do = { factor = 0 } } }"
       ],
       "relationships": [
         "Decisions consume triggers and effects.",
-        "Localisation keys usually match category and decision IDs."
+        "Localisation keys usually match category and decision IDs.",
+        "Decision blocks under common/decisions/*.txt should reference categories that are defined in common/decisions/categories/*.txt or otherwise supplied by the game or a dependency."
       ],
       "validation": [
+        "Check that every decision category used by common/decisions/*.txt resolves to a category definition when the active mod set is indexed.",
         "Use visible for display gates and available for click gates.",
         "Set fire_only_once, days_remove, days_mission_timeout, timeout_effect, cancel_trigger, or remove_trigger where relevant.",
         "Check AI weights.",
@@ -2299,7 +2304,7 @@
         "encoding",
         "references"
       ],
-      "body": "Use index_hoi4_project before broad generation or refactoring so the agent has a structured map of HOI4 definitions, references, files, flags, variables, scripted triggers/effects, focuses, GUI elements, GFX sprites, texture paths, and localisation keys. Use validate_hoi4_project after indexing and before finishing to return red/yellow/green checks for duplicate definitions, brace balance, missing GFX textures or sprite references, missing localisation references, and replace_path risks. Use repair_hoi4_project in dry-run mode after file changes, then use repair_hoi4_project apply mode to normalize repairable UTF-8 BOM rules, detected legacy text encodings, Paradox script formatting, sound/music checks, or ffmpeg-assisted media convention issues. Do not manually patch encoding or media convention issues file by file; normalize the mod workspace through the repair tool. If ffmpeg is needed and absent, ask the user for approval before installation. Use edit_hoi4_script_file for targeted replacement or insertion of named blocks in existing script files, or for localisation yml key/value updates, instead of regenerating whole files; pass workspace_root so edits cannot escape the current mod or workspace tree. When generation tools write files, agents must provide output_root for the current mod workspace or user-requested output root. generate_localisation_batch is a localisation-only helper with key/value entries; description text should be supplied as its own _desc key/value entry.",
+      "body": "Use index_hoi4_project before broad generation or refactoring so the agent has a structured map of HOI4 definitions, references, files, flags, variables, scripted triggers/effects, focuses, decision categories, event namespaces, GUI elements, GFX sprites, texture paths, and localisation keys. Use validate_hoi4_project after indexing and before finishing to return red/yellow/green checks for duplicate definitions, brace balance, missing GFX textures or sprite references, missing localisation references, missing_structural_definition checks for decision categories, event namespaces, and scripted effects, and replace_path risks. Use repair_hoi4_project in dry-run mode after file changes, then use repair_hoi4_project apply mode to normalize repairable UTF-8 BOM rules, detected legacy text encodings, Paradox script formatting, sound/music checks, or ffmpeg-assisted media convention issues. Do not manually patch encoding or media convention issues file by file; normalize the mod workspace through the repair tool. If ffmpeg is needed and absent, ask the user for approval before installation. Use edit_hoi4_script_file for targeted replacement or insertion of named blocks in existing script files, or for localisation yml key/value updates, instead of regenerating whole files; pass workspace_root so edits cannot escape the current mod or workspace tree. When generation tools write files, agents must provide output_root for the current mod workspace or user-requested output root. generate_localisation_batch is a localisation-only helper with key/value entries; description text should be supplied as its own _desc key/value entry.",
       "syntax_blocks": [
         "index_hoi4_project { roots = [{ path = \"<MOD_ROOT>\", role = \"mod\" }] include_game_roots = true }",
         "validate_hoi4_project { roots = [{ path = \"<MOD_ROOT>\", role = \"mod\" }] }",
@@ -2316,6 +2321,7 @@
       "validation": [
         "Run dry-run mode before applying repairs or edits.",
         "Run validate_hoi4_project before finishing after RHoiScribe-assisted file changes.",
+        "Treat missing_structural_definition as a red check: define missing decision categories, event namespaces, and similar indexed structures or correct the references.",
         "Run repair_hoi4_project dry_run=true after file changes and use repair_hoi4_project apply mode for repairable encoding, formatting, and media convention changes.",
         "Do not manually patch encoding or media convention issues file by file.",
         "When dry_run=false for a generation tool, include output_root instead of relying on the tool error.",

@@ -73,7 +73,7 @@ RHoiScribe は agents にローカル HOI4 knowledge layer、reusable prompts、
 - workspace conventions を尊重しながら existing files を安全に編集する
 - user approval 後に experimental GUI/GFX procedural assets を作成する
 
-ローカル Skill folder を使う方が適した agents には、同じ機能を提供する platform 別 Skill package も用意されています。
+ローカル Skill folder を使う方が適した agents には、同じ機能を提供する platform 別 Skill package も用意されています。Skill の直接コマンド体験は MCP client 連携ほど完全ではありません。agent が MCP をサポートする場合は MCP server を優先してください。
 
 <h2 align="center">クイックスタート</h2>
 

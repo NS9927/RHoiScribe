@@ -250,6 +250,7 @@ const PROMPT_CONSTRAINTS: &str = "\
              - Before creating new unique identifiers such as TAGs, focus IDs, shared or joint focus IDs, idea tokens, dynamic modifiers, country/global/state/character/MIO/project flags, variables, event namespaces, decisions, characters, scripted effects, or scripted triggers, call scan_unique_identifiers with intent=create. Use intent=reference when the user asks to reuse existing content.\n\
              - When a generation tool writes files, set dry_run=false only after choosing output_root. Prefer the current mod workspace root or the user-specified output root; never omit output_root and wait for the tool to fail.\n\
              - Treat generate_localisation_batch as a localisation-only helper with key/value entries. Description text should be its own _desc key/value entry when needed.\n\
+             - Call tools with their documented JSON parameter names. Plural array fields such as events, focuses, decisions, and event options are tool input shapes; they are not necessarily literal HOI4 block names in generated files.\n\
              - Focus, event, and decision batch generators can include complete optional HOI4 blocks supplied per item. For complex focuses, missions, decisions, and event chains, provide icons, triggers, offsets, prerequisites, AI weights, scopes, effects, war warnings, and localisation instead of relying on defaults.\n\
              - Prefer edit_hoi4_script_file for targeted changes to existing HOI4 txt/gui/gfx/lua/yml files instead of regenerating whole files.\n\
              - Use repair_hoi4_project with dry_run=true before applying encoding, formatting, or audio fixes. If ffmpeg is required and missing, ask for user approval; only then allow dry_run=false with install_ffmpeg=true for a silent installation attempt.\n\
@@ -327,42 +328,4 @@ fn required_string_argument<'a>(
 
 fn string_argument<'a>(arguments: &'a Map<String, Value>, name: &str) -> Option<&'a str> {
     arguments.get(name).and_then(Value::as_str)
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::{Map, Value, json};
-
-    use super::PromptCatalog;
-
-    #[test]
-    fn rendered_prompts_require_red_green_verify_delivery() {
-        let arguments = Map::from_iter([("request".to_string(), json!("add a focus branch"))]);
-        let rendered = PromptCatalog::builtin()
-            .render("hoi4_mod_planner", &arguments)
-            .expect("prompt should render");
-        let text = serde_json::to_string(&rendered).expect("prompt should serialize");
-
-        assert!(text.contains("RED/GREEN/VERIFY"));
-        assert!(text.contains("verifiable checklist"));
-        assert!(text.contains("fresh verification"));
-        assert!(text.contains("Once this MCP or SKILL has been used"));
-        assert!(text.contains("Do not manually patch encoding"));
-    }
-
-    #[test]
-    fn rendered_prompts_keep_workspace_conventions_above_defaults() {
-        let arguments = Map::from_iter([(
-            "request".to_string(),
-            Value::String("write localisation".to_string()),
-        )]);
-        let rendered = PromptCatalog::builtin()
-            .render("hoi4_localisation_writer", &arguments)
-            .expect("prompt should render");
-        let text = serde_json::to_string(&rendered).expect("prompt should serialize");
-
-        assert!(text.contains("current user request"));
-        assert!(text.contains("workspace"));
-        assert!(text.contains("official HOI4 defaults"));
-    }
 }

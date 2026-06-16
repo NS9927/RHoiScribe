@@ -62,6 +62,8 @@ pub(super) fn scan_text_file(file: &ScanFile, content: &str, output: &mut Worker
 
         index += 1;
     }
+
+    scan_weighted_event_references(file, &tokens, output);
 }
 
 fn scan_block_definition(
@@ -90,6 +92,8 @@ fn scan_block_definition(
             "dynamic modifier block",
         );
     }
+    scan_decision_category_block(file, key, line, stack, output);
+    scan_scripted_effect_block_reference(file, key, line, stack, output);
 }
 
 fn top_level_scripted_kind(path: &str, is_top_level: bool) -> Option<(&'static str, &'static str)> {
@@ -127,7 +131,9 @@ fn scan_assignment(
     scan_flag_assignment(file, key, value, line, current_block, output);
     scan_variable_assignment(file, key, value, line, current_block, output);
     scan_focus_event_assignment(file, key, value, line, current_block, output);
+    scan_event_call_assignment(file, key, value, line, output);
     scan_country_tag_assignment(file, key, line, output);
+    scan_scripted_effect_assignment(file, key, line, stack, output);
 }
 
 fn scan_asset_assignment(
@@ -238,20 +244,180 @@ fn scan_focus_event_assignment(
 ) {
     if let Some((kind, context)) = id_definition_kind(key, current_block) {
         push_definition(file, output, kind, value, line, context);
+        if kind == "event_id"
+            && let Some(namespace) = event_namespace_from_id(value)
+        {
+            push_reference(
+                file,
+                output,
+                "event_namespace",
+                namespace,
+                line,
+                "event id namespace",
+            );
+        }
     }
     if matches!(key, "shared_focus" | "joint_focus") {
         push_reference(file, output, "focus_id", value, line, key);
     }
-    if key == "namespace" {
+    if matches!(key, "namespace" | "add_namespace") {
+        push_definition(file, output, "event_namespace", value, line, key);
+    }
+}
+
+fn scan_decision_category_block(
+    file: &ScanFile,
+    key: &str,
+    line: usize,
+    stack: &[String],
+    output: &mut WorkerOutput,
+) {
+    let path = file.relative_path.as_str();
+    if path.starts_with("common/decisions/categories/") && stack.is_empty() {
         push_definition(
             file,
             output,
-            "event_namespace",
-            value,
+            "decision_category",
+            key,
             line,
-            "event namespace",
+            "decision category definition",
+        );
+    } else if path.starts_with("common/decisions/")
+        && !path.starts_with("common/decisions/categories/")
+        && stack.is_empty()
+    {
+        push_reference(
+            file,
+            output,
+            "decision_category",
+            key,
+            line,
+            "decision category block",
         );
     }
+}
+
+fn scan_event_call_assignment(
+    file: &ScanFile,
+    key: &str,
+    value: &str,
+    line: usize,
+    output: &mut WorkerOutput,
+) {
+    if matches!(key, "id" | "days" | "random_days" | "tooltip") {
+        return;
+    }
+    if !is_event_call_key(key) {
+        return;
+    }
+    push_event_reference(file, value, line, key, output);
+}
+
+fn scan_scripted_effect_block_reference(
+    file: &ScanFile,
+    key: &str,
+    line: usize,
+    stack: &[String],
+    output: &mut WorkerOutput,
+) {
+    if !is_on_action_effect_payload(file, stack) || !is_scripted_effect_call_key(key) {
+        return;
+    }
+    push_reference(
+        file,
+        output,
+        "scripted_effect",
+        key,
+        line,
+        "on_action effect block",
+    );
+}
+
+fn scan_scripted_effect_assignment(
+    file: &ScanFile,
+    key: &str,
+    line: usize,
+    stack: &[String],
+    output: &mut WorkerOutput,
+) {
+    if !is_on_action_effect_payload(file, stack) || !is_scripted_effect_call_key(key) {
+        return;
+    }
+    push_reference(
+        file,
+        output,
+        "scripted_effect",
+        key,
+        line,
+        "on_action effect assignment",
+    );
+}
+
+fn is_on_action_effect_payload(file: &ScanFile, stack: &[String]) -> bool {
+    file.relative_path.starts_with("common/on_actions/")
+        && stack.iter().any(|block| block == "effect")
+}
+
+fn is_scripted_effect_call_key(key: &str) -> bool {
+    is_script_identifier(key) && (key.ends_with("_effect") || key.contains("_effect_"))
+}
+
+fn scan_weighted_event_references(file: &ScanFile, tokens: &[Token], output: &mut WorkerOutput) {
+    let mut stack = Vec::<String>::new();
+    let mut index = 0usize;
+
+    while index < tokens.len() {
+        let token = &tokens[index];
+        if token.kind == TokenKind::Close {
+            stack.pop();
+            index += 1;
+            continue;
+        }
+        if is_block_start(tokens, index) {
+            stack.push(tokens[index].text.clone());
+            index += 3;
+            continue;
+        }
+        if is_assignment(tokens, index) {
+            if stack.last().is_some_and(|block| block == "random_events") {
+                push_event_reference(
+                    file,
+                    &tokens[index + 2].text,
+                    token.line,
+                    "random_events",
+                    output,
+                );
+            }
+            index += 3;
+            continue;
+        }
+        index += 1;
+    }
+}
+
+fn push_event_reference(
+    file: &ScanFile,
+    event_id: &str,
+    line: usize,
+    context: &str,
+    output: &mut WorkerOutput,
+) {
+    if let Some(namespace) = event_namespace_from_id(event_id) {
+        push_reference(file, output, "event_namespace", namespace, line, context);
+    }
+}
+
+fn is_event_call_key(key: &str) -> bool {
+    matches!(
+        key,
+        "country_event" | "news_event" | "state_event" | "unit_event"
+    )
+}
+
+fn event_namespace_from_id(value: &str) -> Option<&str> {
+    let (namespace, suffix) = value.split_once('.')?;
+    (!namespace.is_empty() && suffix.chars().next().is_some_and(|c| c.is_ascii_digit()))
+        .then_some(namespace)
 }
 
 fn id_definition_kind(

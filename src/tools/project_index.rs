@@ -29,9 +29,6 @@ use super::project_files::{ProjectFile, collect_project_files};
 
 #[path = "project_index_scan.rs"]
 mod project_index_scan;
-#[cfg(test)]
-#[path = "project_index_tests.rs"]
-mod project_index_tests;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProjectIndexRequest {

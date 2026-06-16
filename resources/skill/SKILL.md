@@ -50,3 +50,4 @@ Use the platform executable name for the current system. On Windows, quote JSON 
 - Prefer existing workspace paths and naming conventions before official fallback conventions.
 - Keep file names, folder names, and HOI4 token identifiers ASCII-only unless they are player-facing localisation text.
 - Deliver complete game-readable files, not sketches, TODO placeholders, or partial drafts.
+- Call tools with their documented JSON parameter names. Plural array fields such as `events`, `focuses`, `decisions`, and event `options` are tool input shapes; they are not necessarily literal HOI4 block names in generated files.

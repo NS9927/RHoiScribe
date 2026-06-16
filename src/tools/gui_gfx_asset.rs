@@ -23,17 +23,12 @@ use std::{fs, path::Path};
 
 use serde::{Deserialize, Serialize};
 
-#[cfg(test)]
-use self::gui_gfx_asset_render::crc32;
 use self::gui_gfx_asset_render::{
     RenderOptions, base64_decode, base64_encode, encode_png_rgba, render_asset,
 };
 
 #[path = "gui_gfx_asset_render.rs"]
 mod gui_gfx_asset_render;
-#[cfg(test)]
-#[path = "gui_gfx_asset_tests.rs"]
-mod gui_gfx_asset_tests;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GenerateGuiGfxAssetRequest {

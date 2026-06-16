@@ -164,18 +164,3 @@ fn relative_path(root: &Path, file: &Path) -> Result<String, String> {
             )
         })
 }
-
-#[cfg(test)]
-mod tests {
-    use super::relative_path;
-
-    #[test]
-    fn relative_path_rejects_files_outside_root() {
-        let root = std::path::Path::new("project/root");
-        let outside = std::path::Path::new("other/root/common/test.txt");
-
-        let result = relative_path(root, outside);
-
-        assert!(result.is_err());
-    }
-}

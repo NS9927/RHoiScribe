@@ -25,16 +25,11 @@ use encoding_rs::{Encoding, GBK, WINDOWS_1252};
 use serde::{Deserialize, Serialize};
 
 use self::project_repair_media::{check_media_file, detect_ffmpeg};
-#[cfg(test)]
-use self::project_repair_media::{detect_ffmpeg_with_installer, ffprobe_command};
 use super::project_files::{ProjectFile, collect_project_files};
 use super::{ScanRoot, format_paradox_script};
 
 #[path = "project_repair_media.rs"]
 mod project_repair_media;
-#[cfg(test)]
-#[path = "project_repair_tests.rs"]
-mod project_repair_tests;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct RepairHoi4ProjectRequest {

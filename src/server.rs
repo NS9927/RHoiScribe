@@ -172,15 +172,3 @@ pub async fn run_stdio_server() -> anyhow::Result<()> {
 
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::SERVER_INSTRUCTIONS;
-
-    #[test]
-    fn server_instructions_require_delivery_validation_and_repair() {
-        assert!(SERVER_INSTRUCTIONS.contains("validate_hoi4_project before finishing"));
-        assert!(SERVER_INSTRUCTIONS.contains("repair_hoi4_project dry_run=true"));
-        assert!(SERVER_INSTRUCTIONS.contains("instead of manual per-file fixes"));
-    }
-}

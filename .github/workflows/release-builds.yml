@@ -225,6 +225,8 @@ jobs:
             echo "- Linux Skill package: \`rhoiscribe-skill-linux-x86_64.zip\`"
             echo "- macOS Skill package: \`rhoiscribe-skill-macos-universal.zip\`"
             echo
+            echo "Skill direct commands are useful when MCP setup is not available, but the Skill experience is less complete than MCP client integration."
+            echo
             echo "On Linux or macOS, run \`chmod +x <downloaded-file>\` if your system asks for executable permission."
             echo
             echo "To print the command path for your MCP client, run the downloaded file with \`--print-command\`. To use RHoiScribe from a Skill package without MCP setup, run \`--skill list-tools\`, \`--skill list-resources\`, or \`--skill list-prompts\`."

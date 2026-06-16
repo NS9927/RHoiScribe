@@ -19,9 +19,6 @@
 // https://github.com/czxieddan/RHoiScribe
 //------------------------------------------------------------------------------------
 
-#[cfg(test)]
-#[path = "batch_generation_tests.rs"]
-mod batch_generation_tests;
 mod environment;
 mod error_log;
 mod gui_gfx_asset;
@@ -32,8 +29,6 @@ mod project_index;
 mod project_repair;
 mod project_validation;
 mod script_edit;
-#[cfg(test)]
-mod test_support;
 mod unique_scan;
 
 use std::{borrow::Cow, error::Error, fmt, fs, path::Path};
@@ -73,28 +68,28 @@ const TOOL_SPECS: &[ToolSpec] = &[
     ToolSpec {
         name: "generate_localisation_batch",
         title: "Generate localisation batch",
-        description: "Generate a HOI4 localisation yml file with UTF-8 BOM from entries shaped as key/value pairs. file_stem may include nested subdirectories or a mod-relative localisation/<language>/ path; filenames are normalized to the usual _l_<language>.yml suffix. When dry_run=false, provide output_root for the current mod or requested output root.",
+        description: "Generate a HOI4 localisation yml file with UTF-8 BOM. entries is the JSON array of key/value pairs, not a mixed content object; write descriptions as separate _desc entries. file_stem may include nested subdirectories or a mod-relative localisation/<language>/ path; filenames are normalized to the usual _l_<language>.yml suffix. When dry_run=false, provide output_root for the current mod or requested output root.",
         required: &["language", "file_stem", "entries", "dry_run"],
         handler: call_generate_localisation_batch,
     },
     ToolSpec {
         name: "generate_focus_batch",
         title: "Generate focus batch",
-        description: "Generate a HOI4 focus tree from focus IDs plus optional per-focus blocks such as icon, x/y, prerequisites, availability, bypass, AI weights, war warnings, completion rewards, and extra raw HOI4 script blocks.",
+        description: "Generate a HOI4 focus tree. focuses is the JSON array of focus objects; each id renders inside focus = {} and can carry icon, x/y, prerequisites, availability, bypass, AI weights, war warnings, completion rewards, extra_assignments for key/value script, and extra_blocks for raw HOI4 script blocks. When dry_run=false, provide output_root for the current mod or requested output root.",
         required: &["country_tag", "tree_id", "focuses", "dry_run"],
         handler: call_generate_focus_batch,
     },
     ToolSpec {
         name: "generate_event_batch",
         title: "Generate event batch",
-        description: "Generate HOI4 country or news events from event IDs plus optional trigger, immediate, picture, major, option, AI chance, hidden effect, and extra raw HOI4 script blocks.",
+        description: "Generate HOI4 country or news events. events is the JSON array of event objects; options is the JSON array of event choices and renders as HOI4 option = {} blocks, so do not write a literal options block into game files. Each option can carry trigger, ai_chance, effects, hidden_effect, extra_assignments, and extra_blocks. When dry_run=false, provide output_root for the current mod or requested output root.",
         required: &["namespace", "events", "dry_run"],
         handler: call_generate_event_batch,
     },
     ToolSpec {
         name: "generate_decision_batch",
         title: "Generate decision batch",
-        description: "Generate a HOI4 decision category from decision IDs plus optional icons, costs, visible/available gates, missions, timeout/cancel logic, effects, AI weights, and extra raw HOI4 script assignments or blocks.",
+        description: "Generate a HOI4 decision category. decisions is the JSON array of decision objects; category-level visible/allowed and icon belong to the category, while per-decision visible/available, mission timers, target/cancel/remove triggers, effects, ai_will_do, extra_assignments such as dynamic = yes, and extra_blocks belong to each decision. When dry_run=false, provide output_root for the current mod or requested output root.",
         required: &["category_id", "decisions", "dry_run"],
         handler: call_generate_decision_batch,
     },

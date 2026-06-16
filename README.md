@@ -73,7 +73,7 @@ At a high level, it helps agents with:
 - safe edits to existing files while respecting workspace conventions
 - experimental GUI/GFX asset creation when the user approves new procedural art
 
-The bundled Skill package exposes the same capabilities for agents that prefer a local Skill folder instead of an MCP server entry.
+The bundled Skill package exposes the same capabilities for agents that prefer a local Skill folder instead of an MCP server entry. Its direct-command experience is less complete than MCP client integration, so use the MCP server when your agent supports it.
 
 <h2 align="center">Quick Start</h2>
 

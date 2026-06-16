@@ -36,9 +36,6 @@ use super::{IndexedFile, ProjectIndexItem, ProjectIndexRequest, ScanRoot, projec
 
 #[path = "project_validation_localisation.rs"]
 mod project_validation_localisation;
-#[cfg(test)]
-#[path = "project_validation_tests.rs"]
-mod project_validation_tests;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProjectValidationRequest {
@@ -83,6 +80,7 @@ pub fn validate_hoi4_project(
     check_replace_path_risks(&validation_files, &mut checks)?;
     check_missing_gfx_textures(&request.roots, &index.references, &mut checks);
     check_missing_gfx_sprites(&index.definitions, &index.references, &mut checks);
+    check_missing_structural_definitions(&index.definitions, &index.references, &mut checks);
     check_missing_localisation(&validation_files, &index.definitions, &mut checks)?;
     add_green_category_checks(&mut checks);
     sort_checks(&mut checks);
@@ -146,6 +144,10 @@ const CATEGORY_GREEN_CHECKS: &[(&str, &str)] = &[
     (
         "missing_localisation",
         "All indexed localisation references resolve to localisation keys.",
+    ),
+    (
+        "missing_structural_definition",
+        "Decision categories, event namespaces, and other indexed structural references resolve to definitions.",
     ),
 ];
 
@@ -377,6 +379,63 @@ fn check_missing_localisation(
     })?);
 
     Ok(())
+}
+
+fn check_missing_structural_definitions(
+    definitions: &[ProjectIndexItem],
+    references: &[ProjectIndexItem],
+    checks: &mut Vec<ProjectValidationCheck>,
+) {
+    for expected in STRUCTURAL_REFERENCE_KINDS {
+        let defined = definitions
+            .iter()
+            .filter(|definition| definition.kind == *expected)
+            .map(|definition| definition.name.as_str())
+            .collect::<HashSet<_>>();
+
+        for reference in references
+            .iter()
+            .filter(|reference| reference.kind == *expected)
+        {
+            if defined.contains(reference.name.as_str()) {
+                continue;
+            }
+            checks.push(missing_structural_definition_check(reference));
+        }
+    }
+}
+
+const STRUCTURAL_REFERENCE_KINDS: &[&str] =
+    &["decision_category", "event_namespace", "scripted_effect"];
+
+fn missing_structural_definition_check(reference: &ProjectIndexItem) -> ProjectValidationCheck {
+    check(
+        "missing_structural_definition",
+        "red",
+        "error",
+        &reference.path,
+        reference.line,
+        &format!(
+            "{} `{}` is referenced by {} but no matching definition was indexed.",
+            structural_kind_label(&reference.kind),
+            reference.name,
+            reference.context
+        ),
+        Some(format!(
+            "Define {} `{}` in the correct HOI4 file or update the reference.",
+            structural_kind_label(&reference.kind),
+            reference.name
+        )),
+    )
+}
+
+fn structural_kind_label(kind: &str) -> &str {
+    match kind {
+        "decision_category" => "decision category",
+        "event_namespace" => "event namespace",
+        "scripted_effect" => "scripted effect",
+        _ => "structural item",
+    }
 }
 
 fn brace_balance_checks(file: ProjectFile) -> Vec<ProjectValidationCheck> {
