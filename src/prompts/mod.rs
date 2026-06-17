@@ -114,6 +114,26 @@ const BUILTIN_PROMPTS: &[PromptTemplate] = &[
         ],
     },
     PromptTemplate {
+        name: "hoi4_implementation_breakdown",
+        title: "HOI4 Implementation Breakdown",
+        description: "Split a HOI4 modding goal into verifiable development work units before editing files.",
+        mode: "Break the user's request into HOI4 implementation work units before making files. Identify affected systems such as focuses, events, decisions, GUI/GFX, localisation, scripted effects, scripted triggers, ideas, history, map, or music; define exact output files, unique IDs, dependencies, scope assumptions, player-facing text needs, and verifiable acceptance checks for each unit. Use RED/GREEN/VERIFY discipline and choose RHoiScribe tools for each step.",
+        arguments: &[
+            PromptArgumentTemplate {
+                name: "request",
+                title: "Request",
+                description: "The full modding goal to break down before implementation.",
+                required: true,
+            },
+            PromptArgumentTemplate {
+                name: "workspace_state",
+                title: "Workspace State",
+                description: "Optional summary of visible folders, existing files, dependencies, or known constraints.",
+                required: false,
+            },
+        ],
+    },
+    PromptTemplate {
         name: "hoi4_review",
         title: "HOI4 Mod Review",
         description: "Review generated HOI4 mod files for syntax, paths, encoding, and game readability.",
