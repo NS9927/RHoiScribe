@@ -71,6 +71,8 @@ RHoiScribe дает agents локальный слой знаний HOI4, reusab
 - red/yellow/green проверками рисков загрузки перед передачей результата
 - быстрой проверкой encoding, formatting и media conventions
 - безопасным редактированием существующих файлов с учетом workspace conventions
+- подготовкой debug launch для HOI4 через Rchadow
+- cross-IDE agent preferences в `.rhoiscribe` через RNMDB
 - experimental GUI/GFX asset creation после user approval на новую procedural art
 
 Skill package — самый быстрый способ дать совместимому agent локальный доступ без изменения MCP configuration. Для полной функциональности и более плавной работы используйте MCP server, если ваш agent поддерживает MCP.
