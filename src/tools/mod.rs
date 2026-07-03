@@ -25,12 +25,16 @@ mod gui_gfx_asset;
 mod hoi4_keys;
 mod mod_skeleton;
 mod paradox_lexer;
+mod preferences;
 mod project_effective_files;
 mod project_files;
 mod project_index;
 mod project_repair;
 mod project_validation;
+mod rchadow_debug;
+mod rnmdb_store;
 mod script_edit;
+mod tool_logs;
 mod unique_scan;
 
 use std::{borrow::Cow, error::Error, fmt, fs, path::Path};
@@ -52,6 +56,10 @@ pub use gui_gfx_asset::{
     GenerateGuiGfxAssetRequest, GenerateGuiGfxAssetResult, GeneratedGuiGfxAssetFile,
 };
 pub use mod_skeleton::Hoi4ModSkeletonRequest;
+pub use preferences::{
+    AgentPreferenceItem, AgentPreferenceMutationResult, AgentPreferencesResult,
+    DeleteAgentPreferenceRequest, ListAgentPreferencesRequest, SetAgentPreferenceRequest,
+};
 pub use project_index::{IndexedFile, ProjectIndexItem, ProjectIndexRequest, ProjectIndexResult};
 pub use project_repair::{
     FfmpegStatus, RepairChange, RepairCheck, RepairHoi4ProjectRequest, RepairHoi4ProjectResult,
@@ -59,7 +67,12 @@ pub use project_repair::{
 pub use project_validation::{
     ProjectValidationCheck, ProjectValidationRequest, ProjectValidationResult,
 };
+pub use rchadow_debug::{RchadowDebugLaunchRequest, RchadowDebugLaunchResult};
 pub use script_edit::{EditHoi4ScriptFileRequest, EditHoi4ScriptFileResult, ScriptEditOperation};
+pub use tool_logs::{
+    ToolLogEntry, ToolLogExportRequest, ToolLogExportResult, ToolLogQueryRequest,
+    ToolLogQueryResult,
+};
 pub use unique_scan::{
     CandidateScanResult, IdentifierCandidate, IdentifierMatch, PathRisk, ScanRoot,
     UniqueIdentifierScanRequest, UniqueIdentifierScanResult,
@@ -125,11 +138,53 @@ const TOOL_SPECS: &[ToolSpec] = &[
         handler: call_validate_hoi4_debug_run,
     },
     ToolSpec {
+        name: "launch_hoi4_debug_with_rchadow",
+        title: "Launch HOI4 debug with Rchadow",
+        description: "Use Rchadow to prepare a HOI4 debug playset and optionally launch hoi4.exe with debug arguments. The tool chooses memory mode for temporary launch-only debugging and disk mode for durable project sessions unless mode is provided.",
+        required: &["game_path", "document_path", "workspace_mod_path"],
+        handler: call_launch_hoi4_debug_with_rchadow,
+    },
+    ToolSpec {
         name: "classify_error_log",
         title: "Classify HOI4 error log",
         description: "Group error.log lines by likely HOI4 subsystem and link messages back to changed files when paths are provided.",
         required: &["error_log_path"],
         handler: call_classify_error_log,
+    },
+    ToolSpec {
+        name: "list_agent_preferences",
+        title: "List agent preferences",
+        description: "Read persistent RHoiScribe user or project habits from the RNMDB-backed .rhoiscribe store so agents can keep cross-IDE preferences such as localisation folder style.",
+        required: &[],
+        handler: call_list_agent_preferences,
+    },
+    ToolSpec {
+        name: "set_agent_preference",
+        title: "Set agent preference",
+        description: "Write one persistent RHoiScribe preference into the RNMDB-backed .rhoiscribe store. Use stable ASCII keys such as localisation.folder_style.",
+        required: &["key", "value"],
+        handler: call_set_agent_preference,
+    },
+    ToolSpec {
+        name: "delete_agent_preference",
+        title: "Delete agent preference",
+        description: "Remove one persistent RHoiScribe preference from the RNMDB-backed .rhoiscribe store.",
+        required: &["key"],
+        handler: call_delete_agent_preference,
+    },
+    ToolSpec {
+        name: "query_tool_logs",
+        title: "Query tool logs",
+        description: "Read recent RHoiScribe tool-call logs from the same RNMDB-backed .rhoiscribe store as preferences. Supports optional regex filtering over each log entry's JSON text.",
+        required: &[],
+        handler: call_query_tool_logs,
+    },
+    ToolSpec {
+        name: "export_tool_logs",
+        title: "Export tool logs",
+        description: "Export RHoiScribe tool-call logs as JSON from the same RNMDB-backed .rhoiscribe store as preferences. Supports optional regex filtering over each log entry's JSON text.",
+        required: &["output_path"],
+        handler: call_export_tool_logs,
     },
     ToolSpec {
         name: "index_hoi4_project",
@@ -444,12 +499,45 @@ impl ToolCatalog {
     }
 
     pub fn call(&self, name: &str, arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+        let arguments_for_log = Value::Object(arguments.clone());
+        let result = self.call_without_logging(name, arguments);
+        self.record_tool_log(name, arguments_for_log, &result);
+        result
+    }
+
+    fn call_without_logging(
+        &self,
+        name: &str,
+        arguments: JsonObject,
+    ) -> Result<CallToolResult, ToolError> {
         let tool = self
             .tools
             .iter()
             .find(|tool| tool.name == name)
             .ok_or_else(|| ToolError::UnknownTool(name.to_string()))?;
         (tool.handler)(arguments)
+    }
+
+    fn record_tool_log(
+        &self,
+        name: &str,
+        arguments: Value,
+        result: &Result<CallToolResult, ToolError>,
+    ) {
+        let store_path = arguments
+            .as_object()
+            .and_then(tool_logs::tool_log_store_path_from_arguments);
+        let (success, result, error) = tool_log_outcome(result);
+        let _ = tool_logs::record_tool_call(
+            store_path.as_deref(),
+            tool_logs::ToolLogAppend {
+                tool_name: name.to_string(),
+                arguments,
+                success,
+                result,
+                error,
+            },
+        );
     }
 }
 
@@ -616,10 +704,44 @@ impl ToolEngine {
         environment::validate_hoi4_debug_run(request)
     }
 
+    pub fn launch_hoi4_debug_with_rchadow(
+        request: RchadowDebugLaunchRequest,
+    ) -> Result<RchadowDebugLaunchResult, ToolError> {
+        rchadow_debug::launch_hoi4_debug_with_rchadow(request).map_err(ToolError::InvalidRequest)
+    }
+
     pub fn classify_error_log(
         request: ClassifyErrorLogRequest,
     ) -> Result<ErrorLogClassificationResult, ToolError> {
         error_log::classify_error_log(request).map_err(ToolError::InvalidRequest)
+    }
+
+    pub fn list_agent_preferences(
+        request: ListAgentPreferencesRequest,
+    ) -> Result<AgentPreferencesResult, ToolError> {
+        preferences::list_agent_preferences(request).map_err(ToolError::InvalidRequest)
+    }
+
+    pub fn set_agent_preference(
+        request: SetAgentPreferenceRequest,
+    ) -> Result<AgentPreferenceMutationResult, ToolError> {
+        preferences::set_agent_preference(request).map_err(ToolError::InvalidRequest)
+    }
+
+    pub fn delete_agent_preference(
+        request: DeleteAgentPreferenceRequest,
+    ) -> Result<AgentPreferenceMutationResult, ToolError> {
+        preferences::delete_agent_preference(request).map_err(ToolError::InvalidRequest)
+    }
+
+    pub fn query_tool_logs(request: ToolLogQueryRequest) -> Result<ToolLogQueryResult, ToolError> {
+        tool_logs::query_tool_logs(request).map_err(ToolError::InvalidRequest)
+    }
+
+    pub fn export_tool_logs(
+        request: ToolLogExportRequest,
+    ) -> Result<ToolLogExportResult, ToolError> {
+        tool_logs::export_tool_logs(request).map_err(ToolError::InvalidRequest)
     }
 
     pub fn index_hoi4_project(
@@ -713,6 +835,15 @@ fn structured_result<T: Serialize>(result: T) -> CallToolResult {
     CallToolResult::structured(json!(result))
 }
 
+fn tool_log_outcome(
+    result: &Result<CallToolResult, ToolError>,
+) -> (bool, Option<Value>, Option<String>) {
+    match result {
+        Ok(result) => (true, serde_json::to_value(result).ok(), None),
+        Err(error) => (false, None, Some(error.to_string())),
+    }
+}
+
 fn call_generate_localisation_batch(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
     let request = parse_arguments::<LocalisationBatchRequest>(arguments)?;
     Ok(structured_result(ToolEngine::generate_localisation_batch(
@@ -769,9 +900,47 @@ fn call_validate_hoi4_debug_run(arguments: JsonObject) -> Result<CallToolResult,
     )))
 }
 
+fn call_launch_hoi4_debug_with_rchadow(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+    let request = parse_arguments::<RchadowDebugLaunchRequest>(arguments)?;
+    Ok(structured_result(
+        ToolEngine::launch_hoi4_debug_with_rchadow(request)?,
+    ))
+}
+
 fn call_classify_error_log(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
     let request = parse_arguments::<ClassifyErrorLogRequest>(arguments)?;
     Ok(structured_result(ToolEngine::classify_error_log(request)?))
+}
+
+fn call_list_agent_preferences(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+    let request = parse_arguments::<ListAgentPreferencesRequest>(arguments)?;
+    Ok(structured_result(ToolEngine::list_agent_preferences(
+        request,
+    )?))
+}
+
+fn call_set_agent_preference(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+    let request = parse_arguments::<SetAgentPreferenceRequest>(arguments)?;
+    Ok(structured_result(ToolEngine::set_agent_preference(
+        request,
+    )?))
+}
+
+fn call_delete_agent_preference(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+    let request = parse_arguments::<DeleteAgentPreferenceRequest>(arguments)?;
+    Ok(structured_result(ToolEngine::delete_agent_preference(
+        request,
+    )?))
+}
+
+fn call_query_tool_logs(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+    let request = parse_arguments::<ToolLogQueryRequest>(arguments)?;
+    Ok(structured_result(ToolEngine::query_tool_logs(request)?))
+}
+
+fn call_export_tool_logs(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
+    let request = parse_arguments::<ToolLogExportRequest>(arguments)?;
+    Ok(structured_result(ToolEngine::export_tool_logs(request)?))
 }
 
 fn call_index_hoi4_project(arguments: JsonObject) -> Result<CallToolResult, ToolError> {
@@ -848,6 +1017,8 @@ fn tool_properties(tool_name: &str) -> Map<String, Value> {
     match tool_name {
         "generate_focus_batch" => focus_batch_properties(),
         "generate_decision_batch" => decision_batch_properties(),
+        "query_tool_logs" => query_tool_logs_properties(),
+        "export_tool_logs" => export_tool_logs_properties(),
         _ => Map::new(),
     }
 }
@@ -901,8 +1072,47 @@ fn decision_batch_properties() -> Map<String, Value> {
     ])
 }
 
+fn query_tool_logs_properties() -> Map<String, Value> {
+    Map::from_iter([
+        text_property(
+            "store_path",
+            "Optional RNMDB store path. Omit to use the shared .rhoiscribe preferences and logs database.",
+        ),
+        text_property(
+            "pattern",
+            "Optional Rust regex matched against each complete log entry serialized as JSON.",
+        ),
+        integer_property(
+            "limit",
+            "Maximum entries to return, clamped to the latest 32767 retained entries.",
+        ),
+    ])
+}
+
+fn export_tool_logs_properties() -> Map<String, Value> {
+    Map::from_iter([
+        text_property(
+            "store_path",
+            "Optional RNMDB store path. Omit to use the shared .rhoiscribe preferences and logs database.",
+        ),
+        text_property("output_path", "JSON file path to write the exported logs."),
+        text_property(
+            "pattern",
+            "Optional Rust regex matched against each complete log entry serialized as JSON.",
+        ),
+        integer_property(
+            "limit",
+            "Maximum entries to export, clamped to the latest 32767 retained entries.",
+        ),
+    ])
+}
+
 fn text_property(name: &str, description: &str) -> (String, Value) {
     described_property(name, "string", description)
+}
+
+fn integer_property(name: &str, description: &str) -> (String, Value) {
+    described_property(name, "integer", description)
 }
 
 fn array_property(name: &str, description: &str) -> (String, Value) {

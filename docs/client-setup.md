@@ -171,7 +171,21 @@ Windows clients usually need the `.exe` path and escaped backslashes in JSON:
 - Experimental assets: `generate_gui_gfx_asset` can create local procedural PNG files, `.gfx` sprite registration, and optional `.gui` files without external image models. Writing requires `approved=true`.
 - Environment discovery: `discover_hoi4_environment` can find `<HOI4_GAME_PATH>`, `game_executable_path`, `<HOI4_DOCUMENT_PATH>`, `error_log_path`, and game version when local HOI4 is installed.
 - Debug preflight: `validate_hoi4_debug_run` checks launcher descriptors, playset state, clean document folders, and can optionally launch `hoi4.exe -gdpr-compliant -debug_mode`.
+- Rchadow debug launch: `launch_hoi4_debug_with_rchadow` can prepare a debug playset, choose memory or disk mode, and optionally start HOI4 through Rchadow.
+- Agent preferences: `list_agent_preferences`, `set_agent_preference`, and `delete_agent_preference` persist cross-IDE habits in an RNMDB-backed `.rhoiscribe` store.
+- Tool logs: `query_tool_logs` and `export_tool_logs` read recent tool calls from the same RNMDB-backed `.rhoiscribe` store as agent preferences, with optional regex filtering.
 - Log triage: `classify_error_log` groups `error.log` entries by likely HOI4 subsystem and can correlate entries with changed mod-relative paths.
+
+## Direct Log Access
+
+The executable can inspect the same tool logs without starting an MCP session:
+
+```powershell
+.\rhoiscribe-windows-x86_64.exe --logs "generate_.*"
+.\rhoiscribe-windows-x86_64.exe --export-logs rhoiscribe-tool-logs.json "error|failed"
+```
+
+Linux and macOS use the same arguments on their downloaded binaries.
 
 ## Smoke Test
 
@@ -187,4 +201,4 @@ For project-level checks, call `index_hoi4_project`, then `validate_hoi4_project
 
 For experimental asset generation, call `generate_gui_gfx_asset` with `dry_run = true` first. Set `approved=true` only after the user agrees to create new procedural GUI/GFX assets instead of reusing existing project art.
 
-For local game validation, call `discover_hoi4_environment` first, then pass its returned paths into `validate_hoi4_debug_run` with `launch = false`. Only set `launch = true` after the preflight result is green and the user wants RHoiScribe to start the game.
+For local game validation, call `discover_hoi4_environment` first, then pass its returned paths into `validate_hoi4_debug_run` or `launch_hoi4_debug_with_rchadow` with `launch = false`. Only set `launch = true` after the preflight result is green and the user wants RHoiScribe to start the game.
